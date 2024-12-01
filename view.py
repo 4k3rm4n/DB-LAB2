@@ -7,23 +7,19 @@ class View:
         while True:
             print("Меню:")
             print("1. Вивід назв таблиць")
-            print("2. Вивід імен стовпчиків таблиці")
-            print("3. Додавання даних в таблицю")
-            print("4. Оновлення даних в таблиці")
-            print("5. Видалення даних в таблиці")
-            print("6. Генерування даних в таблицю")
-            print("7. Перегляд данних в таблиці")
-            print("8. Знайти тренування по вазі користувача і назви вправи")
-            print("9. Знайти вправу по кількості підходів і складністю")
-            print("10. Знайти середні показники для тренувань по початку тренування")
-            print("11. Вихід")
+            print("2. Додавання даних в таблицю")
+            print("3. Оновлення даних в таблиці")
+            print("4. Видалення даних в таблиці")
+            print("5. Генерування даних в таблицю")
+            print("6. Перегляд данних в таблиці")
+            print("7. Вихід")
 
             choice = input("Зробіть вибір: ")
 
-            if choice in ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'):
+            if choice in ('1', '2', '3', '4', '5', '6', '7'):
                 return choice
             else:
-                print("Будь ласка, введіть правильний номер опції (від 1 до 11)")
+                print("Будь ласка, введіть правильний номер опції (від 1 до 7)")
                 time.sleep(2)
 
     def show_message(self, message):
@@ -37,10 +33,12 @@ class View:
         time.sleep(2)
 
     def show_data(self, data: list, columns):
-        for data_tuple in data:
-            for i, el in enumerate(data_tuple):
-                print(f'{columns[i]}: {el}', end=" ")
-            print()
+        if not data:
+            print("Дані відсутні.")
+            return
+
+        for record in data:
+            print(record)
         time.sleep(2)
 
     def ask_table(self):
@@ -93,32 +91,6 @@ class View:
                 table_name = input("Введіть назву таблиці: ")
                 rows_count = int(input("Введіть кількість рядків для генерації: "))
                 return table_name, rows_count
-            except ValueError as e:
-                print(f"Помилка: {e}")
-
-    def get_training_first_input(self):
-        while True:
-            try:
-                user_weight = int(input("Введіть вагу користувача: "))
-                exercise_name = input("Введіть назву вправи: ")
-                return user_weight, exercise_name
-            except ValueError as e:
-                print(f"Помилка: {e}")
-
-    def get_exercise_name_input(self):
-        while True:
-            try:
-                number_of_sets = int(input("Введіть точну кількість підходів: "))
-                difficulty = int(input("Введіть точний рівень складності вправи: "))
-                return number_of_sets, difficulty
-            except ValueError as e:
-                print(f"Помилка: {e}")
-
-    def get_avg_exercises_input(self):
-        while True:
-            try:
-                date = input("Введіть дату: ")
-                return date
             except ValueError as e:
                 print(f"Помилка: {e}")
 

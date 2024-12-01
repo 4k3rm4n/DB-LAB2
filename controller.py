@@ -1,11 +1,11 @@
-from model import Model
+import model
 from view import View
 
 
 class Controller:
     def __init__(self):
         self.view = View()
-        self.model = Model()
+        #self.model = Model()
 
     def run(self):
         while True:
@@ -13,84 +13,94 @@ class Controller:
             if choice == '1':
                 self.view_tables()
             elif choice == '2':
-                self.view_columns()
-            elif choice == '3':
                 self.add_data()
-            elif choice == '4':
+            elif choice == '3':
                 self.update_data()
-            elif choice == '5':
+            elif choice == '4':
                 self.delete_data()
-            elif choice == '6':
+            elif choice == '5':
                 self.generate_data()
-            elif choice == '7':
+            elif choice == '6':
                 self.read_data()
-            elif choice == '8':
-                self.find_training_first()
-            elif choice == '9':
-                self.find_exercise_name()
-            elif choice == '10':
-                self.find_avg_exercises()
-            elif choice == '11':
+            elif choice == '7':
                 break
 
     def view_tables(self):
-        tables = self.model.get_all_tables()
+        tables = model.get_all_tables()
         self.view.show_tables(tables)
 
-    def view_columns(self):
-        table = self.view.ask_table()
-        columns = self.model.get_all_columns(table)
-        self.view.show_columns(columns)
-
     def add_data(self):
-        table, columns, val = self.view.insert()
-        massage = self.model.add_data(table, columns, val)
-        self.view.show_message(massage)
+        # Отримуємо назву таблиці та дані для вставки
+        table, columns, values = self.view.insert()
+
+        # Формуємо словник для передачі даних у модель
+        data_dict = dict(zip(columns, values))
+
+        # Викликаємо ORM-метод для додавання даних
+        try:
+            model.add_data(table, data_dict)
+            new_record = data_dict
+            self.view.show_message(f"Дані успішно додані: {new_record}")
+        except Exception as e:
+            self.view.show_message(f"Помилка під час додавання: {str(e)}")
 
     def read_data(self):
-        table = self.view.ask_table()
-        columns = self.model.get_all_columns(table)
-        data = self.model.read_data(table)
-        self.view.show_data(data, columns)
+        try:
+            # Отримуємо назву таблиці
+            table = self.view.ask_table()
+
+            # Викликаємо ORM-метод для читання даних
+            records, columns = model.read_data(table)
+            self.view.show_data(records, columns)
+        except ValueError as e:
+            self.view.show_message(f"Помилка: {str(e)}")
+        except Exception as e:
+            self.view.show_message(f"Неочікувана помилка: {str(e)}")
 
     def delete_data(self):
-        table, id = self.view.delete()
-        massage = self.model.delete_data(table, id)
-        self.view.show_message(massage)
+        try:
+            # Отримуємо назву таблиці
+            table, record_id = self.view.delete()
+
+            # Викликаємо ORM-метод для видалення даних
+            model.delete_data(table, record_id)
+
+            self.view.show_message(f"Запис із ID {record_id} успішно видалено з таблиці {table}.")
+        except ValueError as e:
+            self.view.show_message(f"Помилка: {str(e)}")
+        except Exception as e:
+            self.view.show_message(f"Неочікувана помилка: {str(e)}")
 
     def update_data(self):
-        table, columns, id, new_values = self.view.update()
-        massage = self.model.update_data(table, columns, id, new_values)
-        self.view.show_message(massage)
+        try:
+            # Отримуємо дані для оновлення
+            table, columns, record_id, new_values = self.view.update()
+
+            # Перевіряємо, що кількість колонок відповідає кількості нових значень
+            if len(columns) != len(new_values):
+                raise ValueError("Кількість колонок не співпадає з кількістю нових значень.")
+
+            # Формуємо словник оновлень
+            updates = dict(zip(columns, new_values))
+
+            # Викликаємо ORM-метод для оновлення даних
+            model.update_data(table, record_id, updates)
+
+            self.view.show_message(f"Запис із ID {record_id} успішно оновлено у таблиці {table}.")
+        except ValueError as e:
+            self.view.show_message(f"Помилка: {str(e)}")
+        except Exception as e:
+            self.view.show_message(f"Неочікувана помилка: {str(e)}")
 
     def generate_data(self):
-        table, rows_count = self.view.generate_data_input()
-        massage = self.model.generate_data(table, rows_count)
-        self.view.show_message(massage)
+        try:
+            table, rows_count = self.view.generate_data_input()
 
-    def find_training_first(self):
-        user_weight, exercise_name = self.view.get_training_first_input()
-        data, columns, res_time = self.model.find_training_first(user_weight, exercise_name)
-        if len(data) != 0:
-            self.view.show_data(data, columns)
-            self.view.show_message(res_time)
-        else:
-            self.view.show_message("нічого не знайшлося(")
+            model.generate_data(table, rows_count)
 
-    def find_exercise_name(self):
-        number_of_sets, difficulty = self.view.get_exercise_name_input()
-        data, columns, res_time = self.model.find_exercise_name(number_of_sets, difficulty)
-        if len(data) != 0:
-            self.view.show_data(data, columns)
-            self.view.show_message(res_time)
-        else:
-            self.view.show_message("нічого не знайшлося(")
+            self.view.show_message(f"{rows_count} записів успішно згенеровано у таблицю {table}.")
+        except ValueError as e:
+            self.view.show_message(f"Помилка: {str(e)}")
+        except Exception as e:
+            self.view.show_message(f"Неочікувана помилка: {str(e)}")
 
-    def find_avg_exercises(self):
-        date = self.view.get_avg_exercises_input()
-        data, columns, res_time = self.model.find_avg_exercises(date)
-        if len(data) != 0:
-            self.view.show_data(data, columns)
-            self.view.show_message(res_time)
-        else:
-            self.view.show_message("нічого не знайшлося(")
